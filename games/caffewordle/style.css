@@ -1,0 +1,498 @@
+/* ===== Perusasetukset ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===== Pelialue ===== */
+.game {
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+    background: #8fa0b8;
+}
+
+/* ===== Tämänhetkinen sana ===== */
+.current-word {
+    position: absolute;
+    top: 90vh;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 160px;
+    min-height: 48px;
+    padding: 8px 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.35);
+    color: white;
+    font-size: 34px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+/* ===== Valkoinen kirjainympyrä ===== */
+.letter-circle {
+    position: relative;
+    width: min(82vw, 280px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #f8f8f8;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+    touch-action: none;
+}
+
+/* ===== Valintaketjun viivat ===== */
+.selection-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+/* ===== Yksittäinen kirjain-node ===== */
+.letter-node {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #111111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 42px;
+    font-weight: 500;
+    user-select: none;
+    touch-action: none;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+/* ===== Valittu kirjain-node ===== */
+.letter-node.selected {
+    background: #e8f4ff;
+    color: #0077d9;
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow:
+        0 0 0 7px rgba(0, 145, 255, 0.25),
+        0 0 26px rgba(0, 145, 255, 0.9),
+        0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* ===== Sanalista-alue ===== */
+.word-area {
+    position: absolute;
+    top: 5vh;
+    left: 50%;
+    width: min(92vw, 430px);
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+/* ===== Arvattujen sanojen määrä ===== */
+.progress-text {
+    width: 100%;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== Sanalista-alue ===== */
+.word-area {
+    position: absolute;
+    top: 2vh;
+    left: 50%;
+    width: min(92vw, 430px);
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ===== Arvattujen sanojen määrä ===== */
+.progress-text {
+    width: 100%;
+    color: white;
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== 8x3 Sanaruudukko ===== */
+.word-list {
+    width: 100%;
+    display: grid;
+    grid-template-rows: repeat(8, 20px);
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 4px 4px;
+}
+
+/* ===== Yksi arvattava sana ===== */
+.guess-word {
+    width: 100%;
+    height: 100%;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(13px, 3.7vw, 18px);
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    overflow: hidden;
+}
+
+/* ===== Piilotettu sana ===== */
+.guess-word::before {
+    content: attr(data-hidden);
+}
+
+/* ===== Löydetty sana ===== */
+.guess-word.found {
+    background: #ffffff;
+    color: #0077d9;
+    box-shadow: 0 0 18px rgba(0, 145, 255, 0.45);
+}
+
+/* ===== Löydetyn sanan teksti ===== */
+.guess-word.found::before {
+    content: attr(data-word);
+}
+
+/* ===== Tyhjä sanapaikka ===== */
+.guess-word.empty {
+    opacity: 0.0;
+}
+
+/* ===== Piilotettu näkymä ===== */
+.hidden {
+    display: none !important;
+}
+
+/* ===== Pelinäkymä ===== */
+.game-view {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 12vh;
+}
+
+/* ===== Main menu ===== */
+.main-menu {
+    position: absolute;
+    inset: 0;
+    padding: 7vh 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+/* ===== Menun otsikko ===== */
+.menu-title {
+    color: white;
+    font-size: clamp(42px, 12vw, 62px);
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* ===== Menun alaotsikko ===== */
+.menu-subtitle {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* ===== Aihealue-nappien lista ===== */
+.category-list {
+    width: min(92vw, 430px);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+/* ===== Aihealue-nappi ===== */
+.category-button {
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.32);
+    color: white;
+    font-size: 17px;
+    font-weight: 800;
+    text-transform: capitalize;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+    cursor: pointer;
+}
+
+/* ===== Aktiivinen aihealue ===== */
+.category-button.active {
+    background: white;
+    color: #0077d9;
+    box-shadow: 0 0 18px rgba(0, 145, 255, 0.55);
+}
+
+/* ===== Pelaa-nappi ===== */
+.play-button {
+    width: min(82vw, 330px);
+    height: 56px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #0077d9;
+    font-size: 24px;
+    font-weight: 900;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+    cursor: pointer;
+}
+
+/* ===== Pois käytöstä oleva Pelaa-nappi ===== */
+.play-button.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* ===== Word Source Text ===== */
+.word-source {
+    width: min(88vw, 380px);
+    margin-top: auto;
+    padding: 10px 14px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* ===== Word Source Link ===== */
+.word-source a {
+    color: white;
+    font-weight: 900;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ===== Pelin yläpalkki ===== */
+.game-topbar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 48px 1fr 64px;
+    align-items: center;
+}
+
+/* ===== Takaisin-nappi ===== */
+.back-button {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    color: white;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+    cursor: pointer;
+}
+
+/* ===== Aikateksti ===== */
+.timer-text {
+    color: white;
+    font-size: 20px;
+    font-weight: 900;
+    text-align: right;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== Help-nappi ===== */
+.help-button {
+    position: absolute;
+    right: 22px;
+    bottom: 24px;
+    width: 54px;
+    height: 54px;
+    border: none;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #0077d9;
+    font-size: 32px;
+    font-weight: 900;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+    cursor: pointer;
+}
+
+/* ===== Help-nappi painettuna ===== */
+.help-button:active {
+    transform: scale(0.94);
+}
+
+/* ===== Win Screen ===== */
+.win-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    background: rgba(18, 32, 52, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+/* ===== Win Card ===== */
+.win-card {
+    width: min(88vw, 360px);
+    padding: 30px 26px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #111111;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+}
+
+/* ===== Win Text ===== */
+.win-subtitle {
+    margin-bottom: 8px;
+    color: #0077d9;
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.win-card h2 {
+    margin-bottom: 12px;
+    color: #0077d9;
+    font-size: 48px;
+    font-weight: 900;
+}
+
+.win-time {
+    margin-bottom: 6px;
+    color: #333333;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* ===== Win Hint Counter ===== */
+.win-hints {
+    margin-bottom: 20px;
+    color: #555555;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+/* ===== Win Buttons ===== */
+.win-button {
+    width: 100%;
+    height: 52px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 999px;
+    background: #0077d9;
+    color: white;
+    font-size: 20px;
+    font-weight: 900;
+    box-shadow: 0 10px 22px rgba(0, 119, 217, 0.32);
+    cursor: pointer;
+}
+
+/* ===== Secondary Win Button ===== */
+.win-button.secondary {
+    background: #e8f4ff;
+    color: #0077d9;
+    box-shadow: none;
+}
+
+/* ===== Button Press Effect ===== */
+.win-button:active {
+    transform: scale(0.96);
+}
+
+/* ===== Loading Screen ===== */
+.loading-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    background: rgba(18, 32, 52, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+/* ===== Loading Card ===== */
+.loading-card {
+    width: min(86vw, 320px);
+    padding: 30px 24px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #111111;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+}
+
+/* ===== Loading Spinner ===== */
+.loading-spinner {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 18px;
+    border: 7px solid #dceeff;
+    border-top-color: #0077d9;
+    border-radius: 50%;
+    animation: loading-spin 850ms linear infinite;
+}
+
+/* ===== Loading Text ===== */
+.loading-title {
+    margin-bottom: 6px;
+    color: #0077d9;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.loading-text {
+    color: #555555;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+/* ===== Loading Animation ===== */
+@keyframes loading-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

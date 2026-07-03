@@ -6,10 +6,53 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // ===== Data =====
     const levels = [
-        ["xxbxx", "xbvbx", "bbbbb"],
-        ["vvvvv", "bxyxb", "bbbbb"],
-        ["rxoxr", "xyyyx", "vvxvv", "bbbbb"],
-        ["royor", "vxxxv", "bxrxb", "vxxxv", "royor"]
+        [
+            "xxxbxxx", 
+            "xxbvbxx", 
+            "xbbbbbx",
+            "bvbvbvb",
+            "xbbbbbx",
+            "xxbvbxx",
+            "xxxbxxx",
+        ],
+        [
+            "vvvvvvv", 
+            "bxxyxxb", 
+            "ooooooo",
+            "bxyxyxb",
+            "vvvvvvv",
+            "bxxyxxb",
+            "ooooooo",
+        ],
+        [
+            "rrxoxrr", 
+            "xyyyyyx", 
+            "vxvxvxv", 
+            "bbbbbbb",
+            "vxvxvxv", 
+            "xyyxyyx",
+            "rrxoxrr", 
+        ],
+        [
+            "xroyorx", 
+            "xvxxxvx", 
+            "xbxrxbx", 
+            "xvxxxvx", 
+            "xroyorx",
+            "xxxxxxx",
+            "royyyor", 
+            "vxrxrxv", 
+            "bxxrxxb", 
+            "vxrxrxv", 
+            "royyyor",
+            "xxxxxxx",
+            "xroyorx", 
+            "xvxxxvx", 
+            "xbxrxbx", 
+            "xvxxxvx", 
+            "xroyorx",
+
+        ]
     ];
     const brickTypes = {
         b: { color: "blue", score: 50 }, v: { color: "violet", score: 75 }, y: { color: "yellow", score: 100 },
