@@ -1,0 +1,224 @@
+/* ===== Reset / Page ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: black;
+    touch-action: none;
+}
+
+/* ===== Game Area ===== */
+/* The game fills the iframe area given by the React portal. */
+.game-area {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ===== Paddle / Ball / Bricks ===== */
+.paddle {
+    position: absolute;
+    left: 50%;
+    top: 90%;
+    width: 100px;
+    height: 18px;
+    transform: translate(-50%, -50%);
+    border-radius: 4px;
+    user-select: none;
+    touch-action: none;
+    background: linear-gradient(to right,
+        red 0%, red 20%,
+        yellow 20%, yellow 40%,
+        lime 40%, lime 60%,
+        yellow 60%, yellow 80%,
+        red 80%, red 100%
+    );
+}
+
+.ball {
+    position: absolute;
+    left: 50%;
+    top: calc(90% - 20px);
+    width: 16px;
+    height: 16px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: white;
+    pointer-events: none;
+}
+
+.brick {
+    position: absolute;
+    width: 50px;
+    height: 20px;
+    transform: translate(-50%, -50%);
+    border-radius: 4px;
+}
+
+/* ===== UI ===== */
+.score-text {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    z-index: 5;
+    display: none;
+}
+
+.level-menu,
+.game-message {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    min-width: 240px;
+    padding: 28px 32px;
+    transform: translate(-50%, -50%);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.92);
+    color: black;
+    text-align: center;
+    z-index: 20;
+}
+
+.game-message {
+    min-width: 220px;
+    padding: 24px 32px;
+    font-size: 2rem;
+    font-weight: bold;
+    display: none;
+    z-index: 10;
+}
+
+.level-menu h1 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.level-button,
+.menu-button {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    background: black;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ===== Brick explosion ===== */
+.explosion-piece {
+    position: absolute;
+    border-radius: 3px;
+    background: white;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: explode-piece 320ms ease-out forwards;
+}
+
+@keyframes explode-piece {
+    0% {
+        opacity: 1;
+        background: white;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        background: var(--piece-color);
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.5);
+    }
+}
+
+/* ===== Flame ball ===== */
+.ball.flame-ball {
+    background: orange;
+    animation: flame-glow 500ms ease-in-out infinite alternate;
+}
+
+@keyframes flame-glow {
+    0% {
+        box-shadow: 0 0 6px orange;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+        box-shadow: 0 0 18px orange, 0 0 28px red;
+        transform: translate(-50%, -50%) scale(1.15);
+    }
+}
+
+/* ===== Powerups ===== */
+.powerup {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    transform: translate(-50%, -50%);
+    border-radius: 4px;
+    background: gray;
+    pointer-events: none;
+}
+
+.powerup::after,
+.powerup::before {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.powerup.flame::after {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: orange;
+}
+
+.powerup.grow::after {
+    content: "▲";
+    color: lime;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.powerup.shrink::after {
+    content: "▼";
+    color: red;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.powerup.addball::before {
+    content: "";
+    left: 8px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: white;
+}
+
+.powerup.addball::after {
+    content: "+";
+    left: 17px;
+    color: lime;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
+}

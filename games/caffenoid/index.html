@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caffenoid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="game-area">
+        <div id="scoreText" class="score-text">Score: 0</div>
+
+        <div id="levelMenu" class="level-menu">
+            <h1>Caffenoid</h1>
+            <button class="level-button" data-level="0">Map 1</button>
+            <button class="level-button" data-level="1">Map 2</button>
+            <button class="level-button" data-level="2">Map 3</button>
+            <button class="level-button" data-level="3">Map 4</button>
+        </div>
+
+        <div id="gameMessage" class="game-message">
+            <div id="gameMessageText"></div>
+            <button id="restartButton" class="menu-button">Restart</button>
+            <button id="levelSelectButton" class="menu-button">Level Select</button>
+        </div>
+
+        <div id="ball" class="ball"></div>
+        <div id="paddle" class="paddle"></div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
