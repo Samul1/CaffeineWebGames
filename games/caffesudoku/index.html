@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- ===== Responsiivinen näkymä mobiililaitteille ===== -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CaffeSudoku</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ===== Sivun pääsisältö ===== -->
+    <main class="app">
+        <!-- ===== Päävalikko ===== -->
+        <section class="view main-menu" id="mainMenu">
+            <div class="panel menu-panel">
+                <p class="eyebrow">Caffeine Web Games</p>
+
+                <h1 class="game-title">CaffeSudoku</h1>
+
+                <p class="game-description">
+                    Choose the board size and difficulty, then solve the puzzle.
+                </p>
+
+                <!-- ===== Pelin asetukset ===== -->
+                <div class="menu-options">
+
+                    <!-- ===== Sudoku-koon valinta ===== -->
+                    <label class="form-group" for="boardSize">
+                        <span class="form-label">Board Size</span>
+
+                        <select class="select-input" id="boardSize">
+                            <option value="4">4 × 4</option>
+                            <option value="6">6 × 6</option>
+                            <option value="8">8 × 8</option>
+                            <option value="9" selected>9 × 9</option>
+                        </select>
+                    </label>
+
+                    <!-- ===== Vaikeustason valinta ===== -->
+                    <label class="form-group" for="difficulty">
+                        <span class="form-label">Difficulty</span>
+
+                        <select class="select-input" id="difficulty">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </label>
+                </div>
+
+                <!-- ===== Pelin käynnistäminen ===== -->
+                <button class="primary-button" id="playButton" type="button">
+                    Play
+                </button>
+            </div>
+        </section>
+
+        <!-- ===== Pelinäkymä ===== -->
+        <section class="view game-view hidden" id="gameView">
+
+            <!-- ===== Pelin yläpalkki ===== -->
+            <div class="game-toolbar">
+            
+                <!-- ===== Pelin hallintapainikkeet ===== -->
+                <div class="toolbar-actions">
+                    <button
+                        class="secondary-button toolbar-menu-button"
+                        id="mainMenuButton"
+                        type="button"
+                    >
+                        ← Main Menu
+                    </button>
+                
+                    <button
+                        class="secondary-button"
+                        id="restartButton"
+                        type="button"
+                    >
+                        Restart
+                    </button>
+                
+                    <button
+                        class="secondary-button"
+                        id="newGameButton"
+                        type="button"
+                    >
+                        New Game
+                    </button>
+                </div>
+            
+                <!-- ===== Pelin tiedot ===== -->
+                <div class="game-info">
+                    <span id="sizeInfo">9 × 9</span>
+                
+                    <span class="info-divider">•</span>
+                
+                    <span id="difficultyInfo">Medium</span>
+                
+                    <span class="info-divider">•</span>
+                
+                    <span
+                        class="timer-text"
+                        id="timerText"
+                        aria-label="Elapsed time"
+                    >
+                        00:00
+                    </span>
+                </div>
+            </div>
+
+            <!-- ===== Sudoku-paneeli ===== -->
+            <div class="panel board-panel">
+                <h2 class="board-title">CaffeSudoku</h2>
+
+                <p class="iteration-message" id="iterationMessage">
+                    Select an empty cell and enter a number.
+                </p>
+
+                <!--
+                    JavaScript luo kaikki Sudoku-ruudut tämän elementin sisälle.
+                    HTML-tiedostossa ei ole yhtään valmiiksi kovakoodattua ruutua.
+                -->
+                <div
+                    class="sudoku-grid"
+                    id="sudokuGrid"
+                    aria-label="Sudoku board"
+                ></div>
+
+                <!-- ===== Dynaaminen numeronäppäimistö ===== -->
+                <div
+                    class="number-pad"
+                    id="numberPad"
+                    aria-label="Sudoku number input"
+                ></div>
+
+                <!-- ===== Pelin tulos- tai virheviesti ===== -->
+                <p
+                    class="game-message"
+                    id="gameMessage"
+                    aria-live="polite"
+                ></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
