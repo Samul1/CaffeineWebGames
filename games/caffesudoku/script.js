@@ -81,20 +81,16 @@ const DIFFICULTY_CONFIGS = {
 // board:
 //     Pelaajan tämänhetkinen muokattava lauta.
 //
-// selectedRow ja selectedCol:
-//     Valitun ruudun koordinaatit.
+// hintedCells:
+//     Vihjeellä paljastettujen ruutujen koordinaatit.
 //
-// playing:
-//     Kertoo, voiko pelaaja muokata lautaa.
+// Koordinaatti tallennetaan merkkijonona:
 //
-// timerId:
-//     setInterval-ajastimen tunniste.
+// "row,col"
 //
-// timerStartedAt:
-//     Pelikierroksen alkamishetki millisekunteina.
+// Esimerkiksi:
 //
-// elapsedSeconds:
-//     Kulunut kokonaisaika sekunteina.
+// "2,5"
 
 const gameState = {
     size: 9,
@@ -104,6 +100,8 @@ const gameState = {
     solution: [],
     puzzle: [],
     board: [],
+
+    hintedCells: new Set(),
 
     selectedRow: null,
     selectedCol: null,
@@ -372,6 +370,23 @@ window.addEventListener("DOMContentLoaded", () => {
 
     function cloneBoard(board) {
         return board.map(row => [...row]);
+    }
+
+    // ===== Ruudun koordinaattiavaimen luominen =====
+    //
+    // Set-rakenteeseen ei tallenneta erillistä kaksiulotteista taulukkoa,
+    // vaan jokainen vihjeruutu tunnistetaan merkkijonolla.
+
+    function createCellKey(row, col) {
+        return `${row},${col}`;
+    }
+
+    // ===== Tarkistetaan, onko ruutu paljastettu vihjeellä =====
+
+    function isHintedCell(row, col) {
+        return gameState.hintedCells.has(
+            createCellKey(row, col)
+        );
     }
 
     // ===== Numeroiden luominen =====
@@ -993,12 +1008,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // ===== Sudoku-pulman näyttäminen =====
     //
-    // Valmiiksi annetut numerot tarkistetaan puzzle-taulukosta.
+    // Solutyypit:
     //
-    // Pelaajan syöttämät numerot luetaan board-taulukosta.
+    // given:
+    //     Alkuperäisessä pulmassa annettu numero.
     //
-    // Tämä on tärkeää, koska pelaajan täyttämä ruutu ei saa muuttua
-    // valmiiksi annetuksi ja lukituksi numeroksi.
+    // hinted:
+    //     Vihjeellä paljastettu ja lukittu numero.
+    //
+    // editable:
+    //     Pelaajan muokattava ruutu.
 
     function renderBoard() {
         const config = gameState.config;
@@ -1020,6 +1039,9 @@ window.addEventListener("DOMContentLoaded", () => {
                 const isGiven =
                     gameState.puzzle[row][col] !== 0;
 
+                const isHinted =
+                    isHintedCell(row, col);
+
                 const cell =
                     document.createElement("button");
 
@@ -1027,11 +1049,14 @@ window.addEventListener("DOMContentLoaded", () => {
                 cell.dataset.row = row;
                 cell.dataset.col = col;
 
-                // ===== Solun luokat =====
+                // ===== Solun luokka =====
 
                 if (isGiven) {
                     cell.className =
                         "sudoku-cell given";
+                } else if (isHinted) {
+                    cell.className =
+                        "sudoku-cell hinted";
                 } else {
                     const valueClass =
                         value === 0
@@ -1047,9 +1072,10 @@ window.addEventListener("DOMContentLoaded", () => {
                 cell.textContent =
                     value === 0 ? "" : value;
 
-                // Valmiiksi annetut numerot ovat aina lukittuja.
+                // Alkuperäiset numerot ja vihjeet lukitaan.
 
-                cell.disabled = isGiven;
+                cell.disabled =
+                    isGiven || isHinted;
 
                 // ===== Saavutettavuusteksti =====
 
@@ -1057,6 +1083,11 @@ window.addEventListener("DOMContentLoaded", () => {
                     cell.setAttribute(
                         "aria-label",
                         `Row ${row + 1}, column ${col + 1}, given value ${value}`
+                    );
+                } else if (isHinted) {
+                    cell.setAttribute(
+                        "aria-label",
+                        `Row ${row + 1}, column ${col + 1}, hinted value ${value}`
                     );
                 } else if (value === 0) {
                     cell.setAttribute(
@@ -1120,16 +1151,17 @@ window.addEventListener("DOMContentLoaded", () => {
     // ===== Muokattavan solun valitseminen =====
 
     function selectCell(row, col) {
-        // Päättyneessä tai käynnistämättömässä pelissä
-        // soluja ei enää valita.
-
         if (!gameState.playing) {
             return;
         }
 
-        // Valmiiksi annettua numeroa ei saa valita.
+        // Alkuperäistä tai vihjeellä paljastettua numeroa
+        // ei voi valita eikä muuttaa.
 
-        if (gameState.puzzle[row][col] !== 0) {
+        if (
+            gameState.puzzle[row][col] !== 0 ||
+            isHintedCell(row, col)
+        ) {
             return;
         }
 
@@ -1220,7 +1252,9 @@ window.addEventListener("DOMContentLoaded", () => {
             button.type = "button";
             button.className = "number-button";
 
+            button.dataset.action = "number";
             button.dataset.value = value;
+
             button.textContent = value;
 
             button.setAttribute(
@@ -1241,7 +1275,7 @@ window.addEventListener("DOMContentLoaded", () => {
         eraseButton.className =
             "number-button erase-button";
 
-        eraseButton.dataset.value = 0;
+        eraseButton.dataset.action = "erase";
         eraseButton.textContent = "Erase";
 
         eraseButton.setAttribute(
@@ -1250,6 +1284,26 @@ window.addEventListener("DOMContentLoaded", () => {
         );
 
         fragment.appendChild(eraseButton);
+
+        // ===== Vihjepainike =====
+
+        const hintButton =
+            document.createElement("button");
+
+        hintButton.type = "button";
+
+        hintButton.className =
+            "number-button hint-button";
+
+        hintButton.dataset.action = "hint";
+        hintButton.textContent = "Hint";
+
+        hintButton.setAttribute(
+            "aria-label",
+            "Reveal one correct number"
+        );
+
+        fragment.appendChild(hintButton);
 
         numberPad.appendChild(fragment);
     }
@@ -1273,8 +1327,6 @@ window.addEventListener("DOMContentLoaded", () => {
         const row = gameState.selectedRow;
         const col = gameState.selectedCol;
 
-        // ===== Pelitilan tarkistus =====
-
         if (
             !gameState.playing ||
             row === null ||
@@ -1283,15 +1335,14 @@ window.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ===== Valmiiksi annetun numeron suojaus =====
+        // Alkuperäistä numeroa tai vihjettä ei saa muuttaa.
 
-        if (gameState.puzzle[row][col] !== 0) {
+        if (
+            gameState.puzzle[row][col] !== 0 ||
+            isHintedCell(row, col)
+        ) {
             return;
         }
-
-        // ===== Syötteen tarkistus =====
-        //
-        // Arvo 0 tarkoittaa numeron poistamista.
 
         if (
             !Number.isInteger(value) ||
@@ -1301,15 +1352,143 @@ window.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ===== Pelilaudan päivittäminen =====
-
         gameState.board[row][col] = value;
 
         updateCell(row, col);
 
-        // Oikeellisuutta ei tarkisteta heti.
-        // Tarkistus tehdään vain silloin, kun koko lauta on täynnä.
+        checkBoardCompletion();
+    }
 
+    // ===== Tyhjien muokattavien ruutujen etsiminen =====
+    //
+    // Vihje voidaan sijoittaa vain ruutuun, joka:
+    //
+    // 1. ei ollut alkuperäisessä pulmassa valmiiksi annettu
+    // 2. ei ole aikaisemmin paljastettu vihjeellä
+    // 3. on edelleen tyhjä eli sen arvo on 0
+    //
+    // Pelaajan jo täyttämää ruutua ei korjata vihjeellä,
+    // vaikka siinä olisi väärä numero.
+
+    function getEmptyEditableCells() {
+        const emptyCells = [];
+
+        for (
+            let row = 0;
+            row < gameState.size;
+            row++
+        ) {
+            for (
+                let col = 0;
+                col < gameState.size;
+                col++
+            ) {
+                const isGiven =
+                    gameState.puzzle[row][col] !== 0;
+
+                const isHinted =
+                    isHintedCell(row, col);
+
+                const isEmpty =
+                    gameState.board[row][col] === 0;
+
+                if (
+                    !isGiven &&
+                    !isHinted &&
+                    isEmpty
+                ) {
+                    emptyCells.push({
+                        row,
+                        col,
+                    });
+                }
+            }
+        }
+
+        return emptyCells;
+    }
+
+    // ===== Satunnaisen vihjeruudun valitseminen =====
+    //
+    // Valittu Sudoku-ruutu jätetään kokonaan huomiotta.
+    //
+    // Jokaisella vielä tyhjällä pelaajan ruudulla on yhtä suuri
+    // mahdollisuus tulla valituksi vihjeen kohteeksi.
+
+    function chooseHintCell() {
+        const emptyCells =
+            getEmptyEditableCells();
+
+        // Laudalla ei ole enää tyhjiä ruutuja.
+
+        if (emptyCells.length === 0) {
+            return null;
+        }
+
+        const randomIndex =
+            Math.floor(
+                Math.random() *
+                emptyCells.length
+            );
+
+        return emptyCells[randomIndex];
+    }
+
+    // ===== Yhden satunnaisen numeron paljastaminen =====
+
+    function revealHint() {
+        if (!gameState.playing) {
+            return;
+        }
+    
+        // Valitaan satunnainen vielä tyhjä pelaajan ruutu.
+    
+        const hintCell =
+            chooseHintCell();
+    
+        // Tyhjiä ruutuja ei enää ole.
+        //
+        // checkBoardCompletion näyttää joko voiton
+        // tai jäljellä olevien virheiden määrän.
+    
+        if (!hintCell) {
+            checkBoardCompletion();
+            return;
+        }
+    
+        const {
+            row,
+            col,
+        } = hintCell;
+    
+        // ===== Oikean numeron paljastaminen =====
+    
+        gameState.board[row][col] =
+            gameState.solution[row][col];
+    
+        // Merkitään ruutu vihjeellä täytetyksi,
+        // jotta se näytetään vihreänä ja lukitaan.
+    
+        gameState.hintedCells.add(
+            createCellKey(row, col)
+        );
+    
+        // Rakennetaan ruudukko uudelleen,
+        // jotta uusi hinted-luokka tulee näkyviin.
+    
+        clearSelection();
+        renderBoard();
+    
+        clearGameMessage();
+    
+        // Valitaan seuraava muokattava ruutu pelaamista varten.
+        //
+        // Tämä valinta ei enää vaikuta seuraavan vihjeen sijaintiin.
+    
+        selectFirstEditableCell();
+    
+        // Tarkistetaan, täyttikö vihje viimeisen tyhjän ruudun.
+    
         checkBoardCompletion();
     }
 
@@ -1442,9 +1621,6 @@ window.addEventListener("DOMContentLoaded", () => {
     // ===== Valinnan siirtäminen nuolinäppäimillä =====
 
     function moveSelection(rowDirection, colDirection) {
-        // Jos mitään ei ole valittuna, valitaan ensimmäinen
-        // pelaajan muokattava ruutu.
-
         if (
             gameState.selectedRow === null ||
             gameState.selectedCol === null
@@ -1456,11 +1632,6 @@ window.addEventListener("DOMContentLoaded", () => {
         let row = gameState.selectedRow;
         let col = gameState.selectedCol;
 
-        // Ohitetaan valmiiksi annetut numerot.
-        //
-        // Yhteen suuntaan voidaan joutua etenemään usean
-        // lukitun ruudun yli ennen muokattavaa ruutua.
-
         for (
             let step = 0;
             step < gameState.size;
@@ -1471,8 +1642,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
             const nextCol =
                 col + colDirection;
-
-            // Ruudukon ulkopuolelle ei siirrytä.
 
             if (
                 nextRow < 0 ||
@@ -1486,7 +1655,16 @@ window.addEventListener("DOMContentLoaded", () => {
             row = nextRow;
             col = nextCol;
 
-            if (gameState.puzzle[row][col] === 0) {
+            const isEditable =
+                gameState.puzzle[row][col] === 0;
+
+            const isNotHinted =
+                !isHintedCell(row, col);
+
+            if (
+                isEditable &&
+                isNotHinted
+            ) {
                 selectCell(row, col);
                 return;
             }
@@ -1576,6 +1754,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         gameState.selectedRow = null;
         gameState.selectedCol = null;
+        gameState.hintedCells.clear();
 
         sudokuGrid.classList.remove(
             "completed"
@@ -1621,6 +1800,8 @@ window.addEventListener("DOMContentLoaded", () => {
                 cloneBoard(
                     puzzleResult.puzzle
                 );
+            
+            gameState.hintedCells.clear();
 
             gameState.selectedRow = null;
             gameState.selectedCol = null;
@@ -1654,6 +1835,7 @@ window.addEventListener("DOMContentLoaded", () => {
             gameState.puzzle = [];
             gameState.board = [];
 
+            gameState.hintedCells.clear();
             gameState.playing = false;
             gameState.selectedRow = null;
             gameState.selectedCol = null;
@@ -1712,6 +1894,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 gameState.puzzle
             );
 
+        gameState.hintedCells.clear();
         gameState.selectedRow = null;
         gameState.selectedCol = null;
 
@@ -1774,26 +1957,26 @@ window.addEventListener("DOMContentLoaded", () => {
         "click",
         startGame
     );
-    
+
     // ===== Paluu päävalikkoon =====
-    
+
     mainMenuButton.addEventListener(
         "click",
         showMainMenu
     );
-    
+
     // ===== Saman pulman aloittaminen alusta =====
-    
+
     restartButton.addEventListener(
         "click",
         restartCurrentPuzzle
     );
-    
+
     // ===== Uuden pulman generointi =====
     //
     // Nykyinen koko ja vaikeustaso säilyvät,
     // koska niitä ei lueta uudelleen päävalikosta.
-    
+
     newGameButton.addEventListener(
         "click",
         generateAndStartPuzzle
@@ -1840,9 +2023,31 @@ window.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            setSelectedCellValue(
-                Number(button.dataset.value)
-            );
+            const action =
+                button.dataset.action;
+
+            // ===== Numero =====
+
+            if (action === "number") {
+                setSelectedCellValue(
+                    Number(button.dataset.value)
+                );
+
+                return;
+            }
+
+            // ===== Numeron poistaminen =====
+
+            if (action === "erase") {
+                setSelectedCellValue(0);
+                return;
+            }
+
+            // ===== Vihje =====
+
+            if (action === "hint") {
+                revealHint();
+            }
         }
     );
 

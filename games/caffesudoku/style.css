@@ -452,6 +452,24 @@ button {
         0 0 8px rgba(32, 229, 242, 0.34);
 }
 
+/* ===== Vihjeellä paljastettu numero ===== */
+
+.sudoku-cell.hinted {
+    color: var(--success);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(13, 75, 67, 0.96),
+            rgba(4, 39, 38, 0.98)
+        );
+
+    text-shadow:
+        0 0 10px rgba(85, 239, 170, 0.5);
+
+    cursor: default;
+}
+
 /* ===== Pelaajan muokattavat ruudut ===== */
 
 .sudoku-cell.editable {
@@ -529,6 +547,29 @@ button {
     opacity: 1;
 
     -webkit-text-fill-color: currentColor;
+}
+
+/* ===== Vihjepainike ===== */
+
+.number-button.hint-button {
+    grid-column: 1 / -1;
+
+    color: var(--success);
+    border-color: rgba(85, 239, 170, 0.5);
+}
+
+.number-button.hint-button:hover:not(:disabled) {
+    border-color: var(--success);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15, 75, 69, 0.98),
+            rgba(4, 42, 40, 0.98)
+        );
+
+    box-shadow:
+        0 0 14px rgba(85, 239, 170, 0.28);
 }
 
 /* ===== Voiton jälkeen lukittu pelaajan ruutu ===== */
